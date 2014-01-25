@@ -17,6 +17,9 @@
    *  * `data-verify`:  Adds a text input in which the user has to input
    *                    the text in this attribute value for the 'confirm'
    *                    button to be clickable. Optional.
+   *  * `data-comment`: Adds a mandatory text input in which the user has
+   *                    to input some text for the 'confirm' button to be
+   *                    clickable. Optional.
    *
    * You can set global setting using `dataConfirmModal.setDefaults`, for example:
    *
@@ -106,9 +109,35 @@
       body.append(verification);
     }
 
+    var comment = element.data('comment');
+    if (comment) {
+      commit.prop('disabled', true);
+
+      var commentField = $('<input/>', {type: 'text', 'class': 'form-control', id: 'commentField'}).on('keyup', function () {
+        commit.prop('disabled', $(this).val() === '');
+      });
+
+      modal.on('shown', function () {
+          commentField.focus();
+      });
+
+      modal.on('hide', function () {
+          commentField.val('').trigger('keyup');
+      });
+
+      body.append(commentField);
+    }
+
     modal.data('confirmed', false);
     commit.on('click', function () {
       modal.data('confirmed', true);
+        if (comment) {
+          $('<input>').attr({
+              type: 'hidden',
+              name: 'comment',
+              value: commentField.val()
+          }).appendTo(element.closest('form'));
+        }
       element.trigger('click');
       modal.modal('hide');
     });
